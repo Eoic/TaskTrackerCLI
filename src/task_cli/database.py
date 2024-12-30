@@ -2,7 +2,6 @@ import sys
 import json
 from os import path
 from typing import TypeVar
-
 from task_cli.utils import deserialize, serialize
 
 T = TypeVar("T")
@@ -17,6 +16,10 @@ class Database:
     @property
     def document(self) -> type[T]:
         return self.data
+
+    @property
+    def file_path(self) -> str:
+        return self.__file_path
 
     def read(self):
         return self.data

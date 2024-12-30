@@ -1,16 +1,11 @@
-from task_cli.database import Database
-from task_cli.model import Task, TaskDocument
-from task_cli.repository import TaskRepository
-from task_cli.utils import serialize, deserialize
+from task_cli.cli import create_parser, process_command
 
 
 def main():
-    database = Database(file_path='data.json', document=TaskDocument)
-    repository = TaskRepository(database)
-    # t1 = Task(status='todo', description='Task 1')
-    # t2 = Task(status='todo', description='Task 2')
-    # t3 = Task(status='todo', description='Task 3')
-    # repository.add(t1)
-    # repository.add(t2)
-    # repository.add(t3)
-    repository.delete(1)
+    parser = create_parser()
+    args = parser.parse_args()
+    process_command(args)
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,11 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run TaskCLI",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "task_cli.task_cli"
+        }
+    ]
+}
