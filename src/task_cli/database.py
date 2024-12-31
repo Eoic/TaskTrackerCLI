@@ -38,8 +38,11 @@ class Database:
             with open(file_path, 'r') as file:
                 self.data = deserialize(into=self.data.__class__, data=file.read())
         except json.JSONDecodeError:
-            print('Invalid DB state - will create an empty document.', file=sys.stderr)
+            print('INFO: Invalid DB state - will create an empty document.')
             self.commit()
         except Exception as error:
-            print(f'An error occurred: {error}.', file=sys.stderr)
+            print(
+                f'An error occurred while setting up the database: {error}.',
+                file=sys.stderr,
+            )
             self.commit()

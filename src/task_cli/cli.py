@@ -144,6 +144,9 @@ def process_list_command(repository: TaskRepository, status: str):
     for task in tasks:
         print(task)
 
+    if len(tasks) == 0:
+        print("No tasks to show.")
+
 
 def process_add_command(repository: TaskRepository, description: str):
     task = Task(description=description, status=Status.TODO)
