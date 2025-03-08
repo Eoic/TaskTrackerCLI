@@ -11,7 +11,7 @@ A simple CLI-based tool for managing TODOs.
 2. `py -m build`
 
 ## Installing
-`pip install .`
+`pip install .` (use `-e` flag to install for development)
 
 ## Usage
 * The program accepts only positional arguments like this: `task-cli <command> <arg1> <arg2> [argn]`
