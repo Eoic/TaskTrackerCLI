@@ -7,54 +7,71 @@ from task_cli.utils import serialize
 
 
 class Status(Enum):
-    TODO = 'todo'
-    IN_PROGRESS = 'in-progress'
-    DONE = 'done'
+    TODO = "todo"
+    IN_PROGRESS = "in-progress"
+    DONE = "done"
+
+
+@dataclass
+class CreateTask:
+    status: Status
+    description: str
+
+    def __post_init__(self):
+        if not is_valid_description(self.description):
+            raise ValueError("Invalid description.")
+
+
+@dataclass
+class UpdateTask:
+    status: Status | None = None
+    description: str | None = None
 
 
 @dataclass(unsafe_hash=True)
 class Task:
-    id: int = field(init=False, default=None)
+    id: int
     status: Status
-    description: str = field(default='')
-    created_at: datetime = field(init=False, default=datetime.now())
-    updated_at: Union[datetime, None] = field(init=False, default=None)
+    description: str
+    created_at: datetime
+    updated_at: Union[datetime, None]
 
     def __post_init__(self):
         if not is_valid_description(self.description):
-            raise ValueError('Invalid description.')
+            raise ValueError("Invalid description.")
 
-    @classmethod
-    def from_dict(cls, data: dict) -> 'Task':
-        task = cls(
-            status=Status(data['status']),
-            description=data['description'],
-        )
+    # @classmethod
+    # def from_dict(cls, data: dict) -> "Task":
+    #     task = cls(
+    #         status=Status(data["status"]),
+    #         description=data["description"],
+    #     )
 
-        task.id = data['id']
-        task.created_at = datetime.fromisoformat(data['created_at'])
-        task.updated_at = (
-            datetime.fromisoformat(data['updated_at']) if data['updated_at'] else None
-        )
+    #     task.id = data["id"]
+    #     task.created_at = datetime.fromisoformat(data["created_at"])
+    #     task.updated_at = (
+    #         datetime.fromisoformat(data["updated_at"]) if data["updated_at"] else None
+    #     )
 
-        return task
+    #     return task
 
     def __str__(self):
-        text = '=' * 80
-        text += '\n| ID:'.ljust(16) + f'{self.id}'
-        text += '\n| Status:'.ljust(
+        text = "=" * 80
+        text += "\n| ID:".ljust(16) + f"{self.id}"
+        text += "\n| Status:".ljust(
             16
-        ) + f'{self.status.value.upper().replace('_', ' ')}'.ljust(15)
-        text += '\n| Description:'.ljust(16) + f'{self.description}'.ljust(15)
-        text += '\n| Created at:'.ljust(
+        ) + f"{self.status.value.upper().replace('_', ' ')}".ljust(15)
+        text += "\n| Description:".ljust(16) + f"{self.description}".ljust(15)
+        text += "\n| Created at:".ljust(
             16
-        ) + f'{self.created_at.strftime('%Y-%m-%d %H:%M:%S')}'.ljust(15)
-        text += '\n| Updated at:'.ljust(
-            16
-        ) + f'{self.updated_at.strftime('%Y-%m-%d %H:%M:%S') if self.updated_at is not None else 'Never'}'.ljust(
-            15
+        ) + f"{self.created_at.strftime('%Y-%m-%d %H:%M:%S')}".ljust(15)
+        text += (
+            "\n| Updated at:".ljust(16)
+            + f"{self.updated_at.strftime('%Y-%m-%d %H:%M:%S') if self.updated_at is not None else 'Never'}".ljust(
+                15
+            )
         )
-        text += '\n' + '=' * 80
+        text += "\n" + "=" * 80
 
         return text
 
@@ -115,4 +132,4 @@ class TaskDocument:
         return len(tasks) > 0
 
     def __str__(self):
-        return f'[{self.__class__.__name__}]\n{serialize(self)}'
+        return f"[{self.__class__.__name__}]\n{serialize(self)}"

@@ -172,3 +172,4 @@ cython_debug/
 
 # Database files
 data*.json
+*.db
