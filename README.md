@@ -6,12 +6,8 @@
 # Task Tracker
 A simple CLI-based tool for managing TODOs.
 
-## Building
-1. `py -m pip install --upgrade build`
-2. `py -m build`
-
 ## Installing
-`pip install .` (use `-e` flag to install for development)
+`pip install -e .`
 
 ## Usage
 * The program accepts only positional arguments like this: `task-cli <command> <arg1> <arg2> [argn]`
