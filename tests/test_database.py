@@ -1,25 +1,19 @@
-# import unittest
-# from os import path, remove
-# from task_cli.database import Database
-# from task_cli.model import TaskDocument
-
-# DB_FILE = "tests/data_testrun.json"
+import unittest
+from os import path, remove
+from task_cli.database import init_db
 
 
-# class TestDatabase(unittest.TestCase):
-#     def tearDown(self):
-#         if path.exists(DB_FILE):
-#             remove(DB_FILE)
+class TestDatabase(unittest.TestCase):
+    db_name = "tests/data_testrun.db"
 
-#     def test_init(self):
-#         db = Database(file_path=DB_FILE, document=TaskDocument)
+    def tearDown(self):
+        if path.exists(self.db_name):
+            remove(self.db_name)
 
-#         self.assertTrue(path.exists(DB_FILE), "File does not exist.")
-#         self.assertEqual(db.file_path, DB_FILE, "File path is not set correctly.")
-#         self.assertIsInstance(
-#             db.document, TaskDocument, "Document is not an instance of TaskDocument."
-#         )
+    def test_init(self):
+        init_db(self.db_name)
+        self.assertTrue(path.exists(self.db_name), "File does not exist.")
 
 
-# if __name__ == "__main__":
-#     unittest.main()
+if __name__ == "__main__":
+    unittest.main()

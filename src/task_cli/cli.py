@@ -1,6 +1,6 @@
 import sys
 import argparse
-from task_cli.database import database
+from task_cli.database import default_database
 from task_cli.model import CreateTask, Status, UpdateTask
 from task_cli.repository import TaskRepository
 
@@ -102,7 +102,7 @@ def create_parser() -> argparse.ArgumentParser:
 
 
 def process_command(args: argparse.Namespace):
-    repository = TaskRepository(database)
+    repository = TaskRepository(default_database)
 
     if not args.command:
         print("No command provided.", file=sys.stderr)

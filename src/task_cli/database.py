@@ -1,9 +1,9 @@
 import sqlite3
 
-database = "tasks.db"
+default_database = "tasks.db"
 
 
-def init_db():
+def init_db(database: str = default_database):
     with sqlite3.connect(database) as connection:
         connection.execute(
             """
