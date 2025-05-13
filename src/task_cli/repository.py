@@ -73,8 +73,6 @@ class TaskRepository:
                         field_values.append(value.value)
                     elif type(value) is date:
                         field_values.append(value.isoformat())
-                    # elif value is None:
-                    #     field_values.append("NULL")
                     else:
                         field_values.append(value)
 

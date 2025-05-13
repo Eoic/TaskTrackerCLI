@@ -7,9 +7,9 @@
             "request": "launch",
             "module": "task_cli.task_cli",
             "args": [
-                "due",
+                "update",
                 "1",
-                "-"
+                "kkkk"
             ]
         }
     ]

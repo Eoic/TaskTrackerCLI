@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Union
 from datetime import datetime, date
-from dataclasses import dataclass, field, fields
+from dataclasses import dataclass, field, fields, MISSING
 from task_cli.validator import is_valid_description
 
 
@@ -26,15 +26,28 @@ class UpdateTask:
     status: Status | None = None
     description: str | None = None
     due_date: date | None = None
-
+    updated_at: datetime = field(default_factory=datetime.now)
     _dirty_fields: set[str] = field(init=False, default_factory=set, repr=False)
 
     def __init__(self, **kwargs):
-        for obj_field in fields(self):
-            if obj_field.name != "_dirty_fields":
-                setattr(self, obj_field.name, kwargs.get(obj_field.name, None))
-
         self._dirty_fields = set(kwargs.keys())
+
+        for obj_field in fields(self):
+            if obj_field.name == "_dirty_fields":
+                continue
+
+            if obj_field.name in kwargs:
+                value = kwargs[obj_field.name]
+            elif obj_field.default_factory is not MISSING:
+                value = obj_field.default_factory()
+            elif obj_field.default is not MISSING:
+                value = obj_field.default
+            else:
+                value = None
+
+            setattr(self, obj_field.name, value)
+
+        self._dirty_fields.add("updated_at")
 
     def __post_init__(self):
         if self.description is not None and not is_valid_description(self.description):
