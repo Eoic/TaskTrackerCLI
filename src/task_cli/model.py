@@ -78,22 +78,54 @@ class Task:
             raise ValueError("Invalid description.")
 
     def __str__(self):
-        text = "-" * 80
-        text += "\n| ID:".ljust(16) + f"{self.id}"
-        text += "\n| Status:".ljust(
-            16
-        ) + f"{self.status.value.upper().replace('_', ' ')}".ljust(15)
-        text += "\n| Description:".ljust(16) + f"{self.description}".ljust(15)
-        text += "\n| Due date:".ljust(16) + f"{self.due_date}".ljust(15)
-        text += "\n| Created at:".ljust(
-            16
-        ) + f"{self.created_at.strftime('%Y-%m-%d %H:%M:%S')}".ljust(15)
-        text += (
-            "\n| Updated at:".ljust(16)
-            + f"{self.updated_at.strftime('%Y-%m-%d %H:%M:%S') if self.updated_at is not None else 'Never'}".ljust(
-                15
+        rows = []
+        max_title_len = 0
+        max_value_len = 0
+        title_padding = 1
+        value_padding = 1
+        extra_symbols = 5
+
+        for obj_field in fields(self):
+            value = getattr(self, obj_field.name)
+            value_repr = "-"
+
+            if isinstance(value, datetime):
+                value_repr = value.strftime("%Y-%m-%d %H:%M:%S")
+            elif value is None:
+                value_repr = "-"
+            else:
+                value_repr = str(value)
+
+            max_title_len = max(max_title_len, len(obj_field.name))
+            max_value_len = max(max_value_len, len(value_repr))
+
+            rows.append(
+                (
+                    obj_field.name.upper(),
+                    value_repr,
+                )
             )
+
+        border_width = (
+            max_title_len
+            + title_padding
+            + max_value_len
+            + value_padding
+            + extra_symbols
         )
-        text += "\n" + "-" * 80
+
+        text = "-" * border_width
+
+        for title, value in rows:
+            text += (
+                "\n| "
+                + title.ljust(max_title_len + title_padding)
+                + "| "
+                + value.ljust(max_value_len + value_padding)
+                + "|"
+            )
+
+        text += "\n"
+        text += "-" * border_width
 
         return text
