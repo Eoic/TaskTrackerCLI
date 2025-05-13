@@ -25,3 +25,9 @@ task-cli list done
 task-cli list todo
 task-cli list in-progress
 ```
+
+### Development
+Run tests and create HTML coverage report:
+```
+python -m coverage run -m unittest && python -m coverage html
+```

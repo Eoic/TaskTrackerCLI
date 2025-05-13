@@ -1,3 +1,5 @@
+from datetime import datetime
+from itertools import tee
 import unittest
 from os import path, remove
 from task_cli.database import init_db
@@ -66,6 +68,28 @@ class TestTaskRepository(unittest.TestCase):
         self.assertEqual(len(tasks_in_progress), 1, "Status filter mismatch.")
         self.assertEqual(len(tasks_done), 1, "Status filter mismatch.")
 
+    def test_due_date(self):
+        repo = TaskRepository(db=self.db_name)
+        task_no_due = repo.add(CreateTask(status=Status.TODO, description="Coding."))
+
+        if not task_no_due:
+            self.fail("Could not create new task.")
+
+        self.assertIsNone(task_no_due.due_date)
+
+        repo.update(
+            task_no_due,
+            UpdateTask(due_date=datetime.strptime("2025-05-17", "%Y-%m-%d").date()),
+        )
+
+        task_due = repo.find_by_id(task_no_due.id)
+
+        if not task_due:
+            self.fail("Could not find updated task.")
+
+        self.assertIsNotNone(task_due.due_date)
+        self.assertEqual(str(task_due.due_date), "2025-05-17")
+
     def test_update(self):
         repo = TaskRepository(db=self.db_name)
         task = repo.find_by_id(1)
@@ -79,7 +103,7 @@ class TestTaskRepository(unittest.TestCase):
         if task is None:
             self.fail("Task with id 1 not found in repository.")
 
-        repo.update(task, UpdateTask(Status.IN_PROGRESS))
+        repo.update(task, UpdateTask(status=Status.IN_PROGRESS))
 
         updated_task = repo.find_by_id(1)
 
