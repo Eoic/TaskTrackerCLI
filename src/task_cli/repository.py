@@ -1,12 +1,22 @@
 import sqlite3
 from typing import List, Union
-from datetime import datetime
+from datetime import date, datetime
 from task_cli.model import CreateTask, Status, Task, UpdateTask
 
 
 class TaskRepository:
     def __init__(self, db: str):
         self.db = db
+
+    def __hydrate(self, row):
+        return Task(
+            id=row[0],
+            description=row[1],
+            status=Status(row[2]),
+            due_date=datetime.fromisoformat(row[3]).date() if row[3] else None,
+            created_at=datetime.fromisoformat(row[4]),
+            updated_at=datetime.fromisoformat(row[5]) if row[5] else None,
+        )
 
     def find_by_id(self, id: int) -> Union[Task, None]:
         with sqlite3.connect(self.db) as connection:
@@ -17,13 +27,7 @@ class TaskRepository:
             if not row:
                 return None
 
-            return Task(
-                id=row[0],
-                description=row[1],
-                status=Status(row[2]),
-                created_at=datetime.fromisoformat(row[3]),
-                updated_at=datetime.fromisoformat(row[4]) if row[4] else None,
-            )
+            return self.__hydrate(row)
 
     def find_by_status(self, status: List[Status] | None = None) -> List[Task]:
         if status is None:
@@ -35,19 +39,7 @@ class TaskRepository:
             query = f"SELECT * FROM tasks WHERE status IN ({placeholders})"
             cursor.execute(query, [s.value for s in status])
             rows = cursor.fetchall()
-
-            tasks = [
-                Task(
-                    id=row[0],
-                    description=row[1],
-                    status=Status(row[2]),
-                    created_at=datetime.fromisoformat(row[3]),
-                    updated_at=datetime.fromisoformat(row[4]) if row[4] else None,
-                )
-                for row in rows
-            ]
-
-            return tasks
+            return [self.__hydrate(row) for row in rows]
 
     def add(self, task: CreateTask):
         with sqlite3.connect(self.db) as connection:
@@ -73,20 +65,25 @@ class TaskRepository:
             field_values = []
             cursor = connection.cursor()
 
-            for field, value in data.__dict__.items():
-                if value is not None:
+            for field, value in data.items():
+                if data.is_set(field):
                     field_keys.append(f"{field} = ?")
 
                     if type(value) is Status:
                         field_values.append(value.value)
+                    elif type(value) is date:
+                        field_values.append(value.isoformat())
+                    # elif value is None:
+                    #     field_values.append("NULL")
                     else:
                         field_values.append(value)
 
-            result = cursor.execute(
-                f"UPDATE tasks SET {', '.join(field_keys)} WHERE id = ?",
-                (*field_values, task.id),
-            )
+            if len(field_keys) == 0:
+                print("No fields to update.")
+                return False
 
+            query = f"UPDATE tasks SET {', '.join(field_keys)} WHERE id = ?"
+            result = cursor.execute(query, (*field_values, task.id))
             connection.commit()
 
             return result.rowcount > 0

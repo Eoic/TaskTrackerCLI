@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Union
-from datetime import datetime
-from dataclasses import dataclass
+from datetime import datetime, date
+from dataclasses import dataclass, field, fields
 from task_cli.validator import is_valid_description
 
 
@@ -25,10 +25,30 @@ class CreateTask:
 class UpdateTask:
     status: Status | None = None
     description: str | None = None
+    due_date: date | None = None
+
+    _dirty_fields: set[str] = field(init=False, default_factory=set, repr=False)
+
+    def __init__(self, **kwargs):
+        for obj_field in fields(self):
+            if obj_field.name != "_dirty_fields":
+                setattr(self, obj_field.name, kwargs.get(obj_field.name, None))
+
+        self._dirty_fields = set(kwargs.keys())
 
     def __post_init__(self):
         if self.description is not None and not is_valid_description(self.description):
             raise ValueError("Invalid description.")
+
+    def items(self):
+        return {
+            field.name: getattr(self, field.name)
+            for field in fields(self)
+            if field.name != "_dirty_fields"
+        }.items()
+
+    def is_set(self, field_name: str) -> bool:
+        return field_name in self._dirty_fields
 
 
 @dataclass(unsafe_hash=True)
@@ -36,6 +56,7 @@ class Task:
     id: int
     status: Status
     description: str
+    due_date: date | None
     created_at: datetime
     updated_at: Union[datetime, None]
 
@@ -50,6 +71,7 @@ class Task:
             16
         ) + f"{self.status.value.upper().replace('_', ' ')}".ljust(15)
         text += "\n| Description:".ljust(16) + f"{self.description}".ljust(15)
+        text += "\n| Due date:".ljust(16) + f"{self.due_date}".ljust(15)
         text += "\n| Created at:".ljust(
             16
         ) + f"{self.created_at.strftime('%Y-%m-%d %H:%M:%S')}".ljust(15)

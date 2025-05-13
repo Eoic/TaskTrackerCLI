@@ -11,6 +11,7 @@ def init_db(database: str = default_database):
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 description TEXT NOT NULL,
                 status TEXT NOT NULL CHECK (status IN ('todo', 'in-progress', 'done')),
+                due_date DATE NULL DEFAULT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )

@@ -5,7 +5,12 @@
             "name": "Run TaskCLI",
             "type": "debugpy",
             "request": "launch",
-            "module": "task_cli.task_cli"
+            "module": "task_cli.task_cli",
+            "args": [
+                "due",
+                "1",
+                "-"
+            ]
         }
     ]
 }
