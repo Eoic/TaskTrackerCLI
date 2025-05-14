@@ -36,18 +36,19 @@ class UpdateTask:
             if obj_field.name == "_dirty_fields":
                 continue
 
+            value = None
+
             if obj_field.name in kwargs:
                 value = kwargs[obj_field.name]
             elif obj_field.default_factory is not MISSING:
                 value = obj_field.default_factory()
             elif obj_field.default is not MISSING:
                 value = obj_field.default
-            else:
-                value = None
 
             setattr(self, obj_field.name, value)
 
         self._dirty_fields.add("updated_at")
+        self.__post_init__()
 
     def __post_init__(self):
         if self.description is not None and not is_valid_description(self.description):

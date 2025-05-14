@@ -1,9 +1,9 @@
 from datetime import datetime
-from itertools import tee
+from unittest.mock import Mock, patch
 import unittest
 from os import path, remove
 from task_cli.database import init_db
-from task_cli.model import CreateTask, Status, UpdateTask
+from task_cli.model import CreateTask, Status, Task, UpdateTask
 from task_cli.repository import TaskRepository
 
 DB_FILE = "tests/data_testrun.json"
@@ -56,6 +56,22 @@ class TestTaskRepository(unittest.TestCase):
         self.assertIsNotNone(t2, "Task with id 2 not found in repository.")
         self.assertIsNotNone(t3, "Task with id 3 not found in repository.")
         self.assertIsNone(t4, "Task with id 4 found in repository.")
+
+    def test_add_task_returns_none_on_failure(self):
+        repo = TaskRepository(self.db_name)
+        task = CreateTask(description="Test task", status=Status.TODO)
+
+        with patch("sqlite3.connect") as mock_connect:
+            mock_conn = Mock()
+            mock_conn.close = Mock()
+            mock_cursor = Mock()
+            mock_cursor.execute.return_value.lastrowid = None
+            mock_cursor.fetchone.return_value = None
+            mock_conn.cursor.return_value = mock_cursor
+            mock_connect.return_value.__enter__.return_value = mock_conn
+
+            result = repo.add(task)
+            self.assertIsNone(result)
 
     def test_find_by_status(self):
         repo = TaskRepository(db=self.db_name)
@@ -124,6 +140,62 @@ class TestTaskRepository(unittest.TestCase):
             repo.delete_by_id(task.id)
 
         self.assertEqual(repo.size(), 0, "Repository size mismatch.")
+
+    def test_create_task_desc_validator(self):
+        task = CreateTask(status=Status.TODO, description="Valid description")
+        self.assertIsNotNone(task, "Task creation failed with valid description.")
+
+        with self.assertRaises(ValueError):
+            CreateTask(status=Status.TODO, description="Invalid description" * 100)
+
+    def test_task_repr(self):
+        task = Task(
+            id=1,
+            description="Test task",
+            status=Status.TODO,
+            due_date=None,
+            created_at=datetime(2025, 5, 14, 22, 8, 16),
+            updated_at=datetime(2025, 5, 14, 22, 8, 16),
+        )
+
+        expected_str = """
+-------------------------------------
+| ID          | 1                   |
+| STATUS      | Status.TODO         |
+| DESCRIPTION | Test task           |
+| DUE_DATE    | -                   |
+| CREATED_AT  | 2025-05-14 22:08:16 |
+| UPDATED_AT  | 2025-05-14 22:08:16 |
+-------------------------------------""".strip()
+
+        self.assertEqual(str(task), expected_str)
+
+    def test_update_task_desc_validator(self):
+        repo = TaskRepository(db=self.db_name)
+        task = repo.find_by_id(1)
+
+        if task is None:
+            self.fail("Task with id 1 not found in repository.")
+
+        self.assertEqual(
+            task.description if task is not None else None,
+            "Task #1",
+            "Initial description mismatch.",
+        )
+
+        with self.assertRaises(ValueError):
+            repo.update(task, UpdateTask(description="Invalid description" * 100))
+
+        updated_task = repo.find_by_id(1)
+
+        if updated_task is None:
+            self.fail("Task with id 1 not found in repository after update.")
+
+        self.assertEqual(
+            updated_task.description,
+            "Task #1",
+            "Description value mismatch - did not update to expected value.",
+        )
 
 
 if __name__ == "__main__":

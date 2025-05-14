@@ -76,10 +76,6 @@ class TaskRepository:
                     else:
                         field_values.append(value)
 
-            if len(field_keys) == 0:
-                print("No fields to update.")
-                return False
-
             query = f"UPDATE tasks SET {', '.join(field_keys)} WHERE id = ?"
             result = cursor.execute(query, (*field_values, task.id))
             connection.commit()

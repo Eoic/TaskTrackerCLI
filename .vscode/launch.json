@@ -11,6 +11,17 @@
                 "1",
                 "kkkk"
             ]
+        },
+        {
+            "name": "Run unittest",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "coverage",
+            "args": [
+                "run",
+                "-m",
+                "unittest",
+            ],
         }
     ]
 }

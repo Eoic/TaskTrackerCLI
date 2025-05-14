@@ -13,7 +13,3 @@ class TestDatabase(unittest.TestCase):
     def test_init(self):
         init_db(self.db_name)
         self.assertTrue(path.exists(self.db_name), "File does not exist.")
-
-
-if __name__ == "__main__":
-    unittest.main()
